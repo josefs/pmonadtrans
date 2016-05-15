@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds    #-}
 {-# LANGUAGE PolyKinds    #-}
-module Control.Monad.Indexed.Trans.TF where
+module Type.Pair where
 
 type family Fst (p::(k,k')) :: k where
   Fst '(k,k') = k
