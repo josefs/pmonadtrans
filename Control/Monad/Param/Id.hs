@@ -4,7 +4,7 @@ module Control.Monad.Param.Id where
 import Control.Monad.Param
 
 data IdP i j a where
-  IdP :: a -> IdP i i a
+  IdP :: { runIdP :: a } -> IdP i i a
 
 instance PMonad IdP where
   preturn a = IdP a
