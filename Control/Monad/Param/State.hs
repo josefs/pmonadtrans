@@ -22,8 +22,8 @@ import Type.Pair
 import GHC.Exts
 
 data StatePT :: (k -> k -> * -> *) -> (*,k) -> (*,k) -> * -> * where
-     StatePT :: { runStatePT :: (Fst i -> ixm (Snd i) (Snd j) (a,Fst j)) } ->
-                StatePT ixm i j a
+     StatePT :: { runStatePT :: (Fst i -> m (Snd i) (Snd j) (a,Fst j)) } ->
+                StatePT m i j a
 
 instance PFunctor f => PFunctor (StatePT f) where
   pfmap f (StatePT m) = StatePT $ \s -> pfmap (\(a,s') -> (f a,s')) (m s)
