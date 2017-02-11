@@ -8,6 +8,8 @@ import Type.Pair
 import Control.Monad.Param
 import Control.Monad.Param.Trans
 
+import Control.Monad.Param.Cont.Class
+
 {- Here's one way to interpret this very complicated type.
    The continuation is what is going to happen after the current
    computation, so therefore the post-state of the current computation
@@ -50,9 +52,6 @@ shift f = ContPT (runContPT . f)
 
 reset :: PMonad m => ContPT j m '(a,i) '(t,j) t -> ContPT k m '(s,i) '(s,j) a
 reset = plift . runContPT
-
-class PMonadCont m where
-  callcc :: ((a -> m j n b) -> m i j a) -> m i j a
 
 instance PMonadCont (ContPT k m) where
   callcc = callccT

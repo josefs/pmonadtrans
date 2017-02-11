@@ -23,6 +23,7 @@ library
                        Control.Monad.Param.Id
                        Control.Monad.Param.Do
                        Control.Monad.Param.Cont
+                       Control.Monad.Param.Cont.Class
 --                       Control.Monad.Param.BackwardsState
                        Control.Monad.Param.Update
                        Control.Monad.Param.P
