@@ -9,7 +9,7 @@ import Type.Pair
 
 import GHC.Exts
 
-class PMonad m => Writer (m :: k -> k -> * -> *) where
+class PMonad m => PMonadWriter (m :: k -> k -> * -> *) where
   type Cat (m :: k -> k -> * -> *) :: * -> * -> *
   type Acc (m :: k -> k -> * -> *) (a :: k) :: *
   type NotAccEq (m :: k -> k -> * -> *) (a :: k) (b :: k) :: Constraint

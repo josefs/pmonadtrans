@@ -48,7 +48,7 @@ instance PMonadTrans StatePT where
 type instance GetState (StatePT m) s = Fst s
 type instance NotStateEq (StatePT m) i j = Snd j ~ Snd i
 
-instance PMonad m => State (StatePT m) where
+instance PMonad m => PMonadState (StatePT m) where
   get = StatePT $ \s -> preturn (s,s)
   set s = StatePT $ \_ -> preturn ((),s)
 

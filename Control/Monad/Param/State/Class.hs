@@ -7,7 +7,7 @@ import Control.Monad.Param
 
 import GHC.Exts
 
-class PMonad m => State (m :: k -> k -> * -> *) where
+class PMonad m => PMonadState (m :: k -> k -> * -> *) where
   get :: m s s (GetState m s)
   set :: NotStateEq m s' s =>
          GetState m s -> m s' s ()

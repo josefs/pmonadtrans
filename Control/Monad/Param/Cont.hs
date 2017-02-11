@@ -13,7 +13,7 @@ import Control.Monad.Param.Trans
    computation, so therefore the post-state of the current computation
    is the pre-state of the continuation. And the continuation runs all
    the way to the end and the end state is k. Now the monad computation
-   we return it the thing that is going to the run right now and hence
+   we return it she thing that is going to run right now and hence
    it must accept the current pre-state as a pre-state. And it will
    run until the end of time which is why it has k as it post-state.
 -}
@@ -40,9 +40,9 @@ instance PMonadTrans (ContPT k) where
 runContPT :: PMonad m => ContPT j m '(s,i) '(t,j) t -> m i j s
 runContPT (ContPT f) = f preturn
 
-callcc :: ((a -> ContPT k m j n b) -> ContPT k m i j a)
-       -> ContPT k m i j a
-callcc f = ContPT (\ c -> unContT (f (\ x -> ContPT (\ _ -> c x))) c)
+callccT :: ((a -> ContPT k m j n b) -> ContPT k m i j a)
+        -> ContPT k m i j a
+callccT f = ContPT (\ c -> unContT (f (\ x -> ContPT (\ _ -> c x))) c)
 
 shift :: PMonad m => ((a -> m j k t) -> ContPT k m '(s,i) '(b,k) b)
                    -> ContPT k m '(s,i) '(t,j) a
@@ -51,9 +51,9 @@ shift f = ContPT (runContPT . f)
 reset :: PMonad m => ContPT j m '(a,i) '(t,j) t -> ContPT k m '(s,i) '(s,j) a
 reset = plift . runContPT
 
-class Cont m where
-  callccC :: ((a -> m j n b) -> m i j a) -> m i j a
+class PMonadCont m where
+  callcc :: ((a -> m j n b) -> m i j a) -> m i j a
 
-instance Cont (ContPT k m) where
-  callccC = callcc
+instance PMonadCont (ContPT k m) where
+  callcc = callccT
 

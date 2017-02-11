@@ -63,14 +63,14 @@ pass
      -> WriterPT c m k l a
 pass (WriterPT m) = WriterPT $ m `pbind` \((a,p),w) -> preturn (a,p w)
 
-instance (PMonad m, Category c) => Writer (WriterPT c m) where
+instance (PMonad m, Category c) => PMonadWriter (WriterPT c m) where
   type Cat (WriterPT c m) = c
   type Acc (WriterPT c m) a = Fst a
   type NotAccEq (WriterPT c m) a b = Snd a ~ Snd b
   tell c = WriterPT (preturn ((),c))
   listen (WriterPT m) = WriterPT $ m `pbind` \(a,w) -> preturn ((a,w),w)
 
-instance (State m, PMonad m, Category c) => State (WriterPT c m) where
+instance (PMonadState m, PMonad m, Category c) => PMonadState (WriterPT c m) where
   get = WriterPT (get `pbind` \s -> preturn (s,id))
   set s = WriterPT (set s `pbind` \_ -> preturn ((),id))
 
