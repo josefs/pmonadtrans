@@ -14,7 +14,8 @@ import Type.Pair
 import Control.Monad.Param
 import Control.Monad.Param.Trans
 
-import Control.Monad.Param.State
+import Control.Monad.Param.Writer.Class
+import Control.Monad.Param.State.Class
 
 import Control.Category
 
@@ -48,6 +49,9 @@ instance (Category c, PMonad m) => PMonad (WriterPT c m) where
 instance Category c => PMonadTrans (WriterPT c) where
   plift m = WriterPT $ m `pbind` \a -> preturn (a,id)
 
+instance (PMonadFix m, Category c) => PMonadFix (WriterPT c m) where
+  pfix f = WriterPT $ pfix (\ ~(a,_) -> runWriterPT $ f a)
+
 tell
   :: (PMonad m, Snd j ~ Snd i) =>
      c (Fst i) (Fst j) -> WriterPT c m i j ()
@@ -69,13 +73,7 @@ pass
      -> WriterPT c m k l a
 pass (WriterPT m) = WriterPT $ m `pbind` \((a,p),w) -> preturn (a,p w)
 
-class Writer (m :: k -> k -> * -> *) where
-  type Cat (m :: k -> k -> * -> *) :: * -> * -> *
-  type Acc (m :: k -> k -> * -> *) (a :: k) :: *
-  type NotAccEq (m :: k -> k -> * -> *) (a :: k) (b :: k) :: Constraint
-  tellW :: NotAccEq m a b => (Cat m) (Acc m a) (Acc m b) -> m a b ()
-
-instance PMonad m => Writer (WriterPT c m) where
+instance (PMonad m, Category c) => Writer (WriterPT c m) where
   type Cat (WriterPT c m) = c
   type Acc (WriterPT c m) a = Fst a
   type NotAccEq (WriterPT c m) a b = Snd a ~ Snd b

@@ -13,6 +13,8 @@ import Control.Monad.Param
 import Control.Monad.Param.Trans
 import Control.Monad.Param.Id
 
+import Control.Monad.Param.State.Class
+
 import Control.Category
 
 import Type.Pair
@@ -52,13 +54,5 @@ instance PMonad m => State (StatePT m) where
 
 instance PMonadFix m => PMonadFix (StatePT m) where
   pfix f = StatePT $ \s -> pfix (\ ~(a,_) -> runStatePT (f a) s)
-
-class State (m :: k -> k -> * -> *) where
-  get :: m s s (GetState m s)
-  set :: NotStateEq m s' s =>
-         GetState m s -> m s' s ()
-
-type family GetState (m :: k -> k -> * -> *) (a :: k) :: *
-type family NotStateEq (m :: k -> k -> * -> *) (a :: k) (b :: k) :: Constraint
 
 type StateP = StatePT IdP
