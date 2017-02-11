@@ -1,5 +1,10 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-|
+Module      : Control.Monad.Param.Update
+
+Update monad. See http://cs.ioc.ee/~tarmo/papers/types13.pdf
+-}
 module Control.Monad.Param.Update where
 
 import Prelude hiding (id,(.))
@@ -8,25 +13,34 @@ import Control.Arrow
 
 import Control.Monad.Param
 
-data UpdateP c s p q a where
-  UpdateP :: { runUpdateP :: s -> (c p q, a) } -> UpdateP c s p q a
+import Type.Pair
 
-instance PFunctor (UpdateP c s) where
-  pfmap f (UpdateP g) = UpdateP $ second f . g
+data UpdatePT c s m p q a where
+  UpdatePT :: { runUpdatePT :: s -> m (Snd p) (Snd q) (c (Fst p) (Fst q), a) } -> UpdatePT c s m p q a
 
-instance Category c => PApplicative (UpdateP c s) where
-  ppure a = UpdateP $ \_ -> (id,a)
-  UpdateP m `papp` UpdateP n = UpdateP $ \s ->
-    let (c1,f) = m s
-        (c2,a) = n s
-    in (c2 . c1, f a)
+instance PFunctor m => PFunctor (UpdatePT c s m) where
+  pfmap f (UpdatePT g) = UpdatePT $ pfmap (second f) . g
 
-instance (Action s c) => PMonad (UpdateP c s) where
-  preturn a = UpdateP $ \_ -> (id,a)
-  UpdateP f `pbind` g =
-    UpdateP $ \s -> let (c1,a) = f s
-                        (c2,b) = runUpdateP (g a) (action s c1)
-                    in (c2 . c1, b)
+instance (Category c, PMonad m) => PApplicative (UpdatePT c s m) where
+  ppure a = UpdatePT $ \_ -> ppure (id,a)
+  UpdatePT m `papp` UpdatePT n = UpdatePT $ \s ->
+    m s `pbind` \(c1,f) ->
+    n s `pbind` \(c2,a) ->
+    preturn (c2 . c1, f a)
+
+instance (Action s c, PMonad m) => PMonad (UpdatePT c s m) where
+  preturn a = UpdatePT $ \_ -> preturn (id,a)
+  UpdatePT f `pbind` g =
+    UpdatePT $ \s -> f s `pbind` \(c1,a) ->
+                     runUpdatePT (g a) (action s c1) `pbind` \(c2,b) ->
+                     preturn (c2 . c1, b)
 
 class Category c => Action s c where
   action :: s -> c a b -> s
+
+write :: (PMonad m, Snd p ~ Snd q) =>
+         c (Fst p) (Fst q) -> UpdatePT c s m p q ()
+write c = UpdatePT $ \_ -> preturn (c,())
+
+env :: (Category c, PMonad m) => UpdatePT c s m p p s
+env = UpdatePT $ \s -> preturn (id,s)
