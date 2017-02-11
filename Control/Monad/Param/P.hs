@@ -13,7 +13,7 @@ import Control.Monad.Param
 import Control.Monad.Param.Trans
 import Control.Monad.Trans.Class
 
--- | Takes a regular monad and makes it into an indexed monad.
+-- | Takes a regular monad and makes it into a parameterized monad.
 data P m i j a where
   P :: { unP :: m a } -> P m i j a
 
@@ -51,7 +51,8 @@ instance Monad m => Monad (P m i i) where
    monad that changes types. We would need to require something stronger,
    like a MonadLayer perhaps.
 
--- | Takes a monad transformer and makes it into an indexed monad transformer
+-- | Takes a monad transformer and makes it into
+--   a parameterized monad transformer
 data PT t (m :: k -> k -> * -> *) i j a where
   PT :: { unPT :: t (m (Snd i) (Snd j)) a } -> PT t m i j a
 
@@ -60,9 +61,9 @@ instance (PMonad m {- , Monad (m (Snd i) (Snd i)) -} ) => PMonad (PT t m) where
   (PT m) `pbind` f = PT $ m >>= unPT . f
 -}
 
--- | Takes an indexed monad and turns it onto a regular monad.
---   It is somewhat limited in the sense that the type indexes need to be
---   the same.
+-- | Takes a parameterized monad and turns it onto a regular monad.
+--   It is somewhat limited in the sense that the type indexes need
+--   to be the same.
 data PM m i a where
   PM :: { unPM :: m i i a } -> PM m i a
 
@@ -83,7 +84,8 @@ promote = PM
 runPM :: PM m i a -> m i i a
 runPM = unPM
 
--- | Takes an indexed monad transformer and creates a regular monad transformer
+-- | Takes a parameterized monad transformer and
+--   creates a regular monad transformer
 data PT t s i m a where
   PT :: { unPT :: t (P m) '(s,i) '(s,i) a } -> PT t s i m a
 
@@ -126,7 +128,8 @@ instance (MonadTrans' (t (m i j)), Mon (t (m i j)) ~ m i j) => PMonad (PMT t m) 
 
 {- This doesn't work because PM needs both parameters to be the same
 
--- | Takes a regular monad transformer and produces an indexed transformer
+-- | Takes a regular monad transformer and produces a
+--   parameterized transformer
 data PMT t m i j a where
   PMT :: t (PM m (Fst i)) a -> PMT t m i i a
 
