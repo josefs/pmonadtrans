@@ -9,6 +9,7 @@ module MonadTest where
    concrete examples of higher kinded versions of this sort of monad.
 
    It's also too bad that it's a multiparameter type class without
+   any functional dependencies
 -}
 
 {-
@@ -26,6 +27,10 @@ data Id a = Id { unId :: a }
 instance MonadM Id (->) where
   returnm a = Id a
   bindm f (Id a) = Id $ unId (f a)
+
+{- An experiment using an associated type to help inference.
+   The monad decides the kind of the arrow.
+-}
 
 class MonadM' (m :: k -> k) where
   type Arr m :: k -> k -> *
@@ -54,3 +59,10 @@ type f :-> g = forall a . f a -> g a
 instance MonadM' IdT where
   type Arr IdT = (:->)
 -}
+
+newtype f :-> g = ColonArrow (forall a. f a -> g a)
+
+instance MonadM' IdT where
+  type Arr IdT = (:->)
+  returnm' = ColonArrow $ \a -> IdT a
+  bindm' (ColonArrow f) = ColonArrow $ \ma -> f (unIdT ma)
