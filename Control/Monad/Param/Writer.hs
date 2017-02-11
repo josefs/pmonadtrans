@@ -52,20 +52,10 @@ instance Category c => PMonadTrans (WriterPT c) where
 instance (PMonadFix m, Category c) => PMonadFix (WriterPT c m) where
   pfix f = WriterPT $ pfix (\ ~(a,_) -> runWriterPT $ f a)
 
-tell
-  :: (PMonad m, Snd j ~ Snd i) =>
-     c (Fst i) (Fst j) -> WriterPT c m i j ()
-tell w = WriterPT $ preturn ((),w)
-
 writer
   :: (PMonad m, Snd j ~ Snd i) =>
      (a, c (Fst i) (Fst j)) -> WriterPT c m i j a
 writer p = WriterPT $ preturn p
-
-listen
-  :: PMonad m =>
-     WriterPT c m i j a -> WriterPT c m i j (a, c (Fst i) (Fst j))
-listen (WriterPT m) = WriterPT $ m `pbind` \(a,w) -> preturn ((a,w),w)
 
 pass
   :: (PMonad m, Snd i ~ Snd k, Snd j ~ Snd l) =>
@@ -77,7 +67,8 @@ instance (PMonad m, Category c) => Writer (WriterPT c m) where
   type Cat (WriterPT c m) = c
   type Acc (WriterPT c m) a = Fst a
   type NotAccEq (WriterPT c m) a b = Snd a ~ Snd b
-  tellW c = WriterPT (preturn ((),c))
+  tell c = WriterPT (preturn ((),c))
+  listen (WriterPT m) = WriterPT $ m `pbind` \(a,w) -> preturn ((a,w),w)
 
 instance (State m, PMonad m, Category c) => State (WriterPT c m) where
   get = WriterPT (get `pbind` \s -> preturn (s,id))
