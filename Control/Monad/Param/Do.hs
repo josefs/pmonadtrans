@@ -1,13 +1,15 @@
+{-|
+Module      : Control.Monad.Param.Do
+
+These definitions allows for using do-notation when programming with
+parameterized monads, by using the RebindableSyntax language pragma.
+-}
 module Control.Monad.Param.Do where
 
 import Control.Monad.Param
 
-{- These definitions allows for using do-notation when programming
-   with indexed monads, by using the RebindableSyntax language pragma.
--}
-
 return :: PMonad m => a -> m i i a
-return = ireturn
+return = preturn
 
 (>>=) :: PMonad m => m i j a -> (a -> m j k b) -> m i k b
-(>>=) a b = ibind a b
+(>>=) a b = pbind a b
