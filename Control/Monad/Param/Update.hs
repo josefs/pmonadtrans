@@ -23,9 +23,10 @@ instance Category c => PApplicative (UpdateP c s) where
 
 instance (Action s c) => PMonad (UpdateP c s) where
   preturn a = UpdateP $ \_ -> (id,a)
-  UpdateP f `pbind` g = UpdateP $ \s -> let (c1,a) = f s
-                                            (c2,b) = runUpdateP (g a) (action s c1)
-                                        in (c2 . c1, b)
+  UpdateP f `pbind` g =
+    UpdateP $ \s -> let (c1,a) = f s
+                        (c2,b) = runUpdateP (g a) (action s c1)
+                    in (c2 . c1, b)
 
 class Category c => Action s c where
   action :: s -> c a b -> s
